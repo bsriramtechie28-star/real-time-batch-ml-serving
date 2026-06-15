@@ -80,10 +80,11 @@ fare_amount is used only to generate the target label and is never used as a mod
 
 ## Assumptions
 
-- January 2024 NYC TLC Yellow Taxi data is representative for local development.
-- Input records conform to the published TLC schema.
-- Missing values are limited and can be handled during preprocessing.
-- Single-node execution is sufficient for assignment-scale workloads.
+- Passenger count is known before trip completion.
+- Trip distance estimate is available at prediction time.
+- Pickup hour is available when prediction is requested.
+- January 2024 TLC data is representative of normal trip behavior.
+- High-fare trips are defined as fare_amount >= 20.5.
 
 ## Future Improvements
 
