@@ -332,6 +332,96 @@ Potential improvements include:
 * Git
 * GitHub
 
+## Architecture Diagram
+
+```text
+NYC TLC Dataset
+        |
+        v
++------------------+
+|    train.py      |
++------------------+
+        |
+        v
++------------------+
+| high_fare_model  |
+|      .pkl        |
++------------------+
+        |
+   +----+----+
+   |         |
+   v         v
++--------+ +----------------+
+|FastAPI | | batch_predict.py|
+| Online | | Batch Scoring   |
++--------+ +----------------+
+   |              |
+   v              v
+Real-time    batch_predictions.csv
+Prediction
+```
+
+### Shared Logic
+
+- Both online and batch inference use the same trained Random Forest model artifact (`high_fare_model.pkl`).
+- Training, online scoring, and batch scoring share the same feature schema:
+  - passenger_count
+  - trip_distance
+  - pickup_hour
+- Model training is performed once and the artifact is reused by both inference paths.
+
+## Deployment Considerations
+
+### Resource Requirements
+
+Recommended container resources for local or cloud deployment:
+
+* CPU Request: 0.5 vCPU
+* CPU Limit: 2 vCPU
+* Memory Request: 512 MB
+* Memory Limit: 1 GB
+
+### Readiness Behavior
+
+The service is considered ready when:
+
+* The FastAPI application has started successfully
+* The trained model artifact (`high_fare_model.pkl`) has been loaded into memory
+
+### Liveness Behavior
+
+The root endpoint (`GET /`) can be used as a basic liveness check.
+
+Expected response:
+
+```json
+{
+  "status": "running"
+}
+```
+
+### Autoscaling Considerations
+
+For production deployment, horizontal scaling can be configured based on:
+
+* CPU utilization
+* Request rate
+* Response latency
+
+Because inference is stateless and the model is loaded during startup, multiple container replicas can serve requests concurrently behind a load balancer.
+
+### Kubernetes Readiness
+
+The application is containerized and suitable for deployment on Kubernetes or similar orchestration platforms.
+
+Potential future enhancements include:
+
+* Kubernetes readiness probes
+* Kubernetes liveness probes
+* Horizontal Pod Autoscaler (HPA)
+* Centralized logging and monitoring
+
+
 ---
 
 ## Author
