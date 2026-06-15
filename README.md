@@ -2,24 +2,85 @@
 
 ## Overview
 
-This project demonstrates an end-to-end machine learning serving platform built using Python, Scikit-Learn, FastAPI, Docker, and GitHub.
+This project demonstrates an end-to-end machine learning serving solution built using Python, Scikit-Learn, FastAPI, Docker, and GitHub.
 
-The solution predicts whether a NYC taxi trip is likely to be a high-fare trip and supports both real-time API inference and large-scale batch scoring workflows.
+The objective is to predict whether a NYC taxi trip is likely to be a high-fare trip based on information available before or near trip start.
 
-Key capabilities include:
+The platform supports:
 
-* Data exploration and target definition
-* Feature engineering and leakage prevention
-* Model training using Random Forest
+* Machine Learning model training
 * Real-time inference using FastAPI
-* Batch prediction pipeline
+* Batch prediction for large datasets
 * Docker containerization
-* Benchmark documentation
-* Production-style project structure
+* Model performance benchmarking
+* Production-style project documentation
 
 ---
 
-## Quick Start
+## Business Problem
+
+Transportation and mobility companies often need to identify potentially high-value trips for pricing analysis, operational planning, and demand forecasting.
+
+This project builds a machine learning classifier that predicts whether a taxi trip is expected to result in a high fare.
+
+---
+
+## Dataset
+
+**Source:** NYC TLC Yellow Taxi Trip Records – January 2024
+
+Dataset location:
+
+```text
+data/yellow_tripdata_2024-01.parquet
+```
+
+The dataset is excluded from source control due to file size.
+
+---
+
+## Prediction Target
+
+Target Variable:
+
+```text
+high_fare_trip
+```
+
+Definition:
+
+```text
+1 = High Fare Trip
+0 = Non High Fare Trip
+```
+
+The target is derived from fare values using a percentile-based threshold.
+
+---
+
+## Features Used
+
+The model uses only information available before or near trip start:
+
+* passenger_count
+* trip_distance
+* pickup_hour
+
+### Leakage Prevention
+
+The following fields were intentionally excluded:
+
+* fare_amount
+* total_amount
+* tip_amount
+* tolls_amount
+* dropoff timestamps
+
+These values are only available after trip completion and would introduce target leakage.
+
+---
+
+## Setup Instructions
 
 ### Clone Repository
 
@@ -46,210 +107,17 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Train Model
-
-```bash
-python src/train.py
-```
-
-This creates:
-
-```text
-models/high_fare_model.pkl
-```
-
-### Start API
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Open Swagger UI:
-
-```text
-http://localhost:8000/docs
-```
-
-### Test Prediction Endpoint
-
-Example Request:
-
-```json
-{
-  "passenger_count": 2,
-  "trip_distance": 10.5,
-  "pickup_hour": 18
-}
-```
-
-Example Response:
-
-```json
-{
-  "high_fare_trip": 1
-}
-```
-
-### Run Batch Predictions
-
-```bash
-python src/batch_predict.py
-```
-
-Output:
-
-```text
-data/batch_predictions.csv
-```
-
-### Run Using Docker
-
-Build Image:
-
-```bash
-docker build -t high-fare-api .
-```
-
-Run Container:
-
-```bash
-docker run -p 8000:8000 high-fare-api
-```
-
-Open:
-
-```text
-http://localhost:8000/docs
-```
-
----
-
-## Business Problem
-
-Transportation and mobility platforms often need to identify potentially high-value trips for pricing analysis, operational planning, demand forecasting, and resource allocation.
-
-This project builds a machine learning solution capable of classifying trips as high-fare or non-high-fare using information available before or near trip start.
-
----
-
-## Dataset
-
-Dataset:
-
-NYC TLC Yellow Taxi Trip Records – January 2024
-
-Expected location:
-
-```text
-data/yellow_tripdata_2024-01.parquet
-```
-
-The dataset is intentionally excluded from source control because of its size.
-
----
-
-## Prediction Objective
-
-Target Variable:
-
-```text
-high_fare_trip
-```
-
-Definition:
-
-```text
-1 = High Fare Trip
-0 = Non High Fare Trip
-```
-
-The target is derived using the 75th percentile of fare values from the dataset.
-
----
-
-## Solution Architecture
-
-```text
-Raw Dataset
-      │
-      ▼
-Feature Engineering
-      │
-      ▼
-Model Training
-      │
-      ▼
-Random Forest Model
-      │
- ┌────┴────┐
- ▼         ▼
-Batch      Real-Time
-Scoring    API Serving
-```
-
----
-
-## Features Used
-
-The model uses only information available before or near trip start:
-
-* passenger_count
-* trip_distance
-* pickup_hour
-
-### Leakage Prevention
-
-The following fields are intentionally excluded:
-
-* fare_amount
-* total_amount
-* tip_amount
-* tolls_amount
-* dropoff timestamps
-
-These fields contain information available only after trip completion and would introduce target leakage.
-
----
-
-## Project Structure
-
-```text
-app/
-│   main.py
-│
-benchmarks/
-│   benchmark.md
-│
-docs/
-│   dataset.md
-│   design_notes.md
-│
-models/
-│   high_fare_model.pkl
-│
-src/
-│   train.py
-│   batch_predict.py
-│   check_data.py
-│
-Dockerfile
-requirements.txt
-README.md
-.gitignore
-.dockerignore
-```
-
 ---
 
 ## Model Training
 
-Train the model:
+Train the machine learning model:
 
 ```bash
 python src/train.py
 ```
 
-Generated artifact:
+This generates:
 
 ```text
 models/high_fare_model.pkl
@@ -258,6 +126,8 @@ models/high_fare_model.pkl
 ---
 
 ## Model Performance
+
+Performance on the evaluation dataset:
 
 | Metric    | Score |
 | --------- | ----- |
@@ -276,7 +146,7 @@ benchmarks/benchmark.md
 
 ## Real-Time API
 
-Start FastAPI:
+Start the FastAPI application:
 
 ```bash
 uvicorn app.main:app --reload
@@ -288,7 +158,7 @@ Swagger UI:
 http://localhost:8000/docs
 ```
 
-Available Endpoints:
+Available endpoints:
 
 ```text
 GET /
@@ -297,7 +167,41 @@ POST /predict
 
 ---
 
-## Batch Prediction Pipeline
+## API Usage Example
+
+### Request
+
+```json
+{
+  "passenger_count": 2,
+  "trip_distance": 10.5,
+  "pickup_hour": 18
+}
+```
+
+### Response
+
+```json
+{
+  "high_fare_trip": 1
+}
+```
+
+---
+
+## API Documentation
+
+### Swagger UI
+
+![Swagger UI](docs/screenshots/swagger-ui.png)
+
+### Sample Prediction Response
+
+![Prediction Response](docs/screenshots/prediction-response.png)
+
+---
+
+## Batch Prediction
 
 Generate predictions for large datasets:
 
@@ -317,22 +221,61 @@ The same trained model is used for both batch and real-time inference.
 
 ## Docker Deployment
 
-Build:
+### Build Image
 
 ```bash
 docker build -t high-fare-api .
 ```
 
-Run:
+### Run Container
 
 ```bash
 docker run -p 8000:8000 high-fare-api
 ```
 
-Access:
+### Verify Deployment
+
+Open:
 
 ```text
 http://localhost:8000/docs
+```
+
+Swagger UI should load successfully.
+
+---
+
+## Project Structure
+
+```text
+app/
+│   main.py
+│
+benchmarks/
+│   benchmark.md
+│
+docs/
+│   dataset.md
+│   design_notes.md
+│   screenshots/
+│       swagger-ui.png
+│       prediction-response.png
+│
+models/
+│   high_fare_model.pkl
+│
+src/
+│   train.py
+│   batch_predict.py
+│   check_data.py
+│
+tests/
+│
+Dockerfile
+.dockerignore
+.gitignore
+README.md
+requirements.txt
 ```
 
 ---
@@ -351,14 +294,15 @@ benchmarks/benchmark.md
 
 ## Engineering Considerations
 
-This project demonstrates several production-oriented machine learning engineering practices:
+This project demonstrates several machine learning engineering practices:
 
 * Feature leakage prevention
+* Reproducible model training
 * Model serialization
 * Batch inference workflows
 * Real-time API serving
 * Docker containerization
-* Reproducible development workflow
+* Git version control
 * Documentation-driven development
 
 ---
@@ -367,11 +311,10 @@ This project demonstrates several production-oriented machine learning engineeri
 
 Potential improvements include:
 
-* Automated unit testing
+* Automated unit tests
 * GitHub Actions CI/CD pipeline
 * MLflow experiment tracking
 * Model versioning
-* Automated benchmark reporting
 * Monitoring and drift detection
 * Cloud deployment on AWS, Azure, or GCP
 
@@ -381,6 +324,7 @@ Potential improvements include:
 
 * Python
 * Pandas
+* NumPy
 * Scikit-Learn
 * FastAPI
 * Uvicorn
@@ -396,4 +340,4 @@ Potential improvements include:
 
 Senior AI/ML Engineer
 
-Production-style machine learning serving platform demonstrating model training, batch inference, real-time API serving, and containerized deployment.
+This project demonstrates model training, batch inference, real-time API serving, Docker deployment, and production-oriented machine learning engineering practices.
