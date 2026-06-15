@@ -220,3 +220,5 @@ venv/
 __pycache__/
 data/*.parquet
 models/*.pkl
+
+data/batch_predictions.csv
