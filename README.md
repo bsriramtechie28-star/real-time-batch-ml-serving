@@ -2,35 +2,141 @@
 
 ## Overview
 
-This project demonstrates a production-style machine learning serving platform built using Python, Scikit-Learn, FastAPI, Docker, and GitHub.
+This project demonstrates an end-to-end machine learning serving platform built using Python, Scikit-Learn, FastAPI, Docker, and GitHub.
 
 The solution predicts whether a NYC taxi trip is likely to be a high-fare trip and supports both real-time API inference and large-scale batch scoring workflows.
 
 Key capabilities include:
 
-* End-to-end ML training pipeline
-* Feature engineering and data validation
-* Real-time REST API serving with FastAPI
-* Batch prediction pipeline for large datasets
+* Data exploration and target definition
+* Feature engineering and leakage prevention
+* Model training using Random Forest
+* Real-time inference using FastAPI
+* Batch prediction pipeline
 * Docker containerization
 * Benchmark documentation
-* Git-based development workflow
+* Production-style project structure
+
+---
+
+## Quick Start
+
+### Clone Repository
+
+```bash
+git clone https://github.com/bsriramtechie28-star/real-time-batch-ml-serving.git
+cd real-time-batch-ml-serving
+```
+
+### Create Virtual Environment
+
+```bash
+python -m venv venv
+```
+
+Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Train Model
+
+```bash
+python src/train.py
+```
+
+This creates:
+
+```text
+models/high_fare_model.pkl
+```
+
+### Start API
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Open Swagger UI:
+
+```text
+http://localhost:8000/docs
+```
+
+### Test Prediction Endpoint
+
+Example Request:
+
+```json
+{
+  "passenger_count": 2,
+  "trip_distance": 10.5,
+  "pickup_hour": 18
+}
+```
+
+Example Response:
+
+```json
+{
+  "high_fare_trip": 1
+}
+```
+
+### Run Batch Predictions
+
+```bash
+python src/batch_predict.py
+```
+
+Output:
+
+```text
+data/batch_predictions.csv
+```
+
+### Run Using Docker
+
+Build Image:
+
+```bash
+docker build -t high-fare-api .
+```
+
+Run Container:
+
+```bash
+docker run -p 8000:8000 high-fare-api
+```
+
+Open:
+
+```text
+http://localhost:8000/docs
+```
 
 ---
 
 ## Business Problem
 
-Transportation and mobility platforms often need to identify potentially high-value trips in real time for pricing analysis, resource planning, demand forecasting, and operational decision-making.
+Transportation and mobility platforms often need to identify potentially high-value trips for pricing analysis, operational planning, demand forecasting, and resource allocation.
 
-This project builds a machine learning solution capable of classifying trips as high-fare or non-high-fare based on information available before or near trip start.
+This project builds a machine learning solution capable of classifying trips as high-fare or non-high-fare using information available before or near trip start.
 
 ---
 
 ## Dataset
 
-Source:
+Dataset:
 
-NYC TLC Yellow Taxi Trip Records (January 2024)
+NYC TLC Yellow Taxi Trip Records – January 2024
 
 Expected location:
 
@@ -101,7 +207,7 @@ The following fields are intentionally excluded:
 * tolls_amount
 * dropoff timestamps
 
-These fields contain information that becomes available only after trip completion and would introduce target leakage.
+These fields contain information available only after trip completion and would introduce target leakage.
 
 ---
 
@@ -109,51 +215,28 @@ These fields contain information that becomes available only after trip completi
 
 ```text
 app/
-    main.py
-
-src/
-    train.py
-    batch_predict.py
-    check_data.py
-
-docs/
-    dataset.md
-    design_notes.md
-
+│   main.py
+│
 benchmarks/
-    benchmark.md
-
+│   benchmark.md
+│
+docs/
+│   dataset.md
+│   design_notes.md
+│
 models/
-    high_fare_model.pkl
-
+│   high_fare_model.pkl
+│
+src/
+│   train.py
+│   batch_predict.py
+│   check_data.py
+│
 Dockerfile
 requirements.txt
 README.md
 .gitignore
-```
-
----
-
-## Environment Setup
-
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate:
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
+.dockerignore
 ```
 
 ---
@@ -183,13 +266,17 @@ models/high_fare_model.pkl
 | Recall    | 0.85  |
 | F1 Score  | 0.88  |
 
-These results were obtained using a Random Forest classifier on the January 2024 dataset.
+Detailed benchmark information is available in:
+
+```text
+benchmarks/benchmark.md
+```
 
 ---
 
-## Real-Time API Serving
+## Real-Time API
 
-Start the FastAPI application:
+Start FastAPI:
 
 ```bash
 uvicorn app.main:app --reload
@@ -201,29 +288,11 @@ Swagger UI:
 http://localhost:8000/docs
 ```
 
-Available endpoints:
+Available Endpoints:
 
 ```text
 GET /
 POST /predict
-```
-
-### Example Request
-
-```json
-{
-  "passenger_count": 2,
-  "trip_distance": 10.5,
-  "pickup_hour": 18
-}
-```
-
-### Example Response
-
-```json
-{
-  "high_fare_trip": 1
-}
 ```
 
 ---
@@ -242,25 +311,25 @@ Output:
 data/batch_predictions.csv
 ```
 
-This workflow demonstrates offline scoring using the same model artifact utilized by the real-time API.
+The same trained model is used for both batch and real-time inference.
 
 ---
 
 ## Docker Deployment
 
-Build image:
+Build:
 
 ```bash
 docker build -t high-fare-api .
 ```
 
-Run container:
+Run:
 
 ```bash
 docker run -p 8000:8000 high-fare-api
 ```
 
-Access API documentation:
+Access:
 
 ```text
 http://localhost:8000/docs
@@ -282,12 +351,12 @@ benchmarks/benchmark.md
 
 ## Engineering Considerations
 
-This project demonstrates several production-oriented ML engineering practices:
+This project demonstrates several production-oriented machine learning engineering practices:
 
 * Feature leakage prevention
 * Model serialization
-* Real-time inference architecture
-* Batch scoring architecture
+* Batch inference workflows
+* Real-time API serving
 * Docker containerization
 * Reproducible development workflow
 * Documentation-driven development
@@ -304,7 +373,7 @@ Potential improvements include:
 * Model versioning
 * Automated benchmark reporting
 * Monitoring and drift detection
-* Cloud deployment (AWS, Azure, GCP)
+* Cloud deployment on AWS, Azure, or GCP
 
 ---
 
