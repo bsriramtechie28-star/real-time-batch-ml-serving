@@ -112,3 +112,58 @@ Results:
 
 Reasoning:
 A Random Forest was selected as a strong baseline for tabular data with minimal feature engineering.
+## Model Selection Trade-offs
+
+### Logistic Regression
+
+Pros:
+- Fast training and inference
+- Highly interpretable
+- Small memory footprint
+
+Cons:
+- Limited ability to model nonlinear relationships
+- May underperform on complex tabular datasets
+
+Decision:
+- Considered as a baseline but not selected because trip behavior exhibits nonlinear patterns that tree-based models capture more effectively.
+
+### Random Forest (Selected)
+
+Pros:
+- Captures nonlinear feature interactions
+- Robust against overfitting
+- Minimal feature preprocessing required
+- Strong performance on tabular datasets
+
+Cons:
+- Larger model size
+- Less interpretable than linear models
+
+Decision:
+- Selected because it achieved strong predictive performance while remaining simple to train, deploy, and maintain.
+
+### XGBoost
+
+Pros:
+- State-of-the-art performance on many tabular datasets
+- Strong handling of complex interactions
+- Built-in regularization
+
+Cons:
+- Requires additional hyperparameter tuning
+- Increased implementation complexity
+
+Decision:
+- Not selected for the initial implementation due to project time constraints. Considered a strong candidate for future optimization.
+
+### Data Leakage Prevention
+
+To ensure realistic predictions, the following fields were excluded from training:
+
+- fare_amount
+- total_amount
+- tip_amount
+- tolls_amount
+
+These attributes become available after or during trip completion and would introduce target leakage. The model was restricted to information realistically available before prediction time.
